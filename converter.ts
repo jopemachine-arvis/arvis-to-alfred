@@ -3,10 +3,16 @@ import fse from 'fs-extra';
 import chalk from 'chalk';
 import _ from 'lodash';
 import { validate } from 'arvis-extension-validator';
+import { transformCommandsToDAG } from './commandConverter';
 
 const replaceAttribute = (json: any, from: string, to: string) => {
   json[`${to}`] = json[`${from}`];
   delete json[`${from}`];
+  return json;
+};
+
+const ensureAttributeExist = (json: any, attrName: string) => {
+  if (!json[attrName]) json = '';
   return json;
 };
 
@@ -20,6 +26,8 @@ const transformAttributes = (sourceJson: any) => {
   sourceJson['disabled'] = !sourceJson['enabled'];
   delete sourceJson['enabled'];
 
+  ensureAttributeExist(sourceJson, 'version');
+  ensureAttributeExist(sourceJson, 'webaddress');
   return sourceJson;
 };
 
@@ -38,11 +46,14 @@ const convert = async (source?: string, outputPath?: string) => {
     }
 
     const out = outputPath ? outputPath : `info.plist`;
-
     const json = transformAttributes(sourceJson);
 
-    const resultPlist = plist.build(json);
+    const { connections, objects } = transformCommandsToDAG(sourceJson.commands);
+    json['connections'] = connections;
+    json['objects'] = objects;
+    delete json['commands'];
 
+    const resultPlist = plist.build(json);
     await fse.writeFile(out, resultPlist, { encoding: 'utf-8' });
 
     console.log(chalk.white(`${chalk.greenBright('✔')} info.plist converting is done.`));

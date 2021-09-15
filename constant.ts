@@ -1,30 +1,31 @@
-const supportedTypes = [
-  'keyword',
-  'scriptfilter',
-  'keyDispatching',
-  'cond',
-  'clipboard',
-  'args',
-  'open',
-  'script',
-  'notification'
-];
+const matchType: any = {
+  'args': 'alfred.workflow.utility.argument',
+  'clipboard': 'alfred.workflow.output.clipboard',
+  'cond': 'alfred.workflow.utility.conditional',
+  'keyDispatching' : 'alfred.workflow.output.dispatchkeycombo',
+  'keyword': 'alfred.workflow.input.keyword',
+  'notification': 'alfred.workflow.output.notification',
+  'open': 'alfred.workflow.action.openurl',
+  'script': 'alfred.workflow.action.script',
+  'scriptfilter': 'alfred.workflow.input.scriptfilter',
+  'hotkey': 'alfred.workflow.trigger.hotkey'
+}
 
 const notSupported = () => {
   return `Not supported`;
 };
 
-const modifierMap = {
-  0: 'normal',
-  131072: 'shift',
-  262144: 'ctrl',
-  524288: 'opt',
-  1048576: 'cmd',
-  8388608: 'fn'
-};
+const modifierToKeycode = {
+  'normal': 0,
+  'shift': 131072,
+  'ctrl': 262144,
+  'opt': 524288,
+  'cmd': 1048576,
+  'fn': 8388608,
+}
 
-export default {
+export {
   notSupported,
-  supportedTypes,
-  modifierMap,
+  matchType,
+  modifierToKeycode,
 }
