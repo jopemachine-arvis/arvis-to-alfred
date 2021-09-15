@@ -1,4 +1,4 @@
 export default function convert(
-  source: string,
+  source?: string,
   out?: string
 ): Promise<void>;

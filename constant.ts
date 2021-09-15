@@ -23,7 +23,7 @@ const modifierMap = {
   8388608: 'fn'
 };
 
-module.exports = {
+export default {
   notSupported,
   supportedTypes,
   modifierMap,

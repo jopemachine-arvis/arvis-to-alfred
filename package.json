@@ -2,9 +2,10 @@
   "name": "arvis-to-alfred",
   "version": "0.0.1",
   "description": "Help to convert arvis-workflow.json to the info.plist file format of Alfred-workflow's",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,7 @@
     "cli"
   ],
   "bin": {
-    "arvis-to-alfred": "cli.js"
+    "arvis-to-alfred": "dist/cli.js"
   },
   "author": {
     "name": "jopemachine",
@@ -40,5 +41,14 @@
     "meow": "^5.0.0",
     "plist": "^3.0.3",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/fs-extra": "^9.0.12",
+    "@types/lodash": "^4.14.172",
+    "@types/meow": "^6.0.0",
+    "@types/plist": "^3.0.2",
+    "@types/uuid": "^8.3.1",
+    "typescript": "^4.4.3"
   }
 }
