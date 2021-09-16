@@ -18,6 +18,10 @@
     "alfred-workflow",
     "cli"
   ],
+  "files": [
+    "dist/*.js",
+    "index.d.ts"
+  ],
   "bin": {
     "arvis-to-alfred": "dist/cli.js"
   },
