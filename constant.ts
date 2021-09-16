@@ -7,7 +7,7 @@ const matchType: any = {
   'notification': 'alfred.workflow.output.notification',
   'open': 'alfred.workflow.action.openurl',
   'script': 'alfred.workflow.action.script',
-  'scriptfilter': 'alfred.workflow.input.scriptfilter',
+  'scriptFilter': 'alfred.workflow.input.scriptfilter',
   'hotkey': 'alfred.workflow.trigger.hotkey'
 }
 
@@ -22,7 +22,7 @@ const modifierToKeycode = {
   'opt': 524288,
   'cmd': 1048576,
   'fn': 8388608,
-}
+};
 
 export {
   notSupported,

@@ -4,30 +4,40 @@ import chalk from 'chalk';
 import _ from 'lodash';
 import { validate } from 'arvis-extension-validator';
 import { transformCommandsToDAG } from './commandConverter';
+import { deleteAttributeIfExist, ensureAttributeExist, insertAttribute, replaceAttribute } from './util';
 
-const replaceAttribute = (json: any, from: string, to: string) => {
-  json[`${to}`] = json[`${from}`];
-  delete json[`${from}`];
-  return json;
-};
-
-const ensureAttributeExist = (json: any, attrName: string) => {
-  if (!json[attrName]) json = '';
-  return json;
+const migrateVariable = (json: any) => {
+  if (json['variable']) {
+    Object.keys(json['variable']).forEach((variableName) => {
+      json['variable'][variableName] = JSON.stringify(json['variable'][variableName]);
+    });
+  }
 };
 
 const transformAttributes = (sourceJson: any) => {
-  delete sourceJson['$schema'];
-  delete sourceJson['defaultIcon'];
-  sourceJson['bundleid'] = `${sourceJson.creator}.${sourceJson.name}`;
+  deleteAttributeIfExist(sourceJson, '$schema');
+  deleteAttributeIfExist(sourceJson, 'defaultIcon');
+  deleteAttributeIfExist(sourceJson, 'latest');
+
+  insertAttribute(sourceJson, 'bundleId', `${sourceJson.creator}.${sourceJson.name}`);
   replaceAttribute(sourceJson, 'creator', 'createdby');
   replaceAttribute(sourceJson, 'webAddress', 'webaddress');
 
-  sourceJson['disabled'] = !sourceJson['enabled'];
-  delete sourceJson['enabled'];
+  insertAttribute(sourceJson, 'disabled', sourceJson['enabled'] ? !sourceJson['enabled'] : true);
+  deleteAttributeIfExist(sourceJson, 'enabled');
 
   ensureAttributeExist(sourceJson, 'version');
   ensureAttributeExist(sourceJson, 'webaddress');
+
+  migrateVariable(sourceJson);
+
+  const { connections, objects, uidata } = transformCommandsToDAG(sourceJson.commands);
+
+  insertAttribute(sourceJson, 'connections', connections);
+  insertAttribute(sourceJson, 'objects', objects);
+  insertAttribute(sourceJson, 'uidata', uidata);
+
+  deleteAttributeIfExist(sourceJson, 'commands');
   return sourceJson;
 };
 
@@ -46,14 +56,8 @@ const convert = async (source?: string, outputPath?: string) => {
     }
 
     const out = outputPath ? outputPath : `info.plist`;
-    const json = transformAttributes(sourceJson);
 
-    const { connections, objects } = transformCommandsToDAG(sourceJson.commands);
-    json['connections'] = connections;
-    json['objects'] = objects;
-    delete json['commands'];
-
-    const resultPlist = plist.build(json);
+    const resultPlist = plist.build(transformAttributes(sourceJson), { indent: '\t', allowEmpty: true });
     await fse.writeFile(out, resultPlist, { encoding: 'utf-8' });
 
     console.log(chalk.white(`${chalk.greenBright('✔')} info.plist converting is done.`));

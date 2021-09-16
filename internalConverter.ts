@@ -1,4 +1,4 @@
-import { v4 as generateUid } from 'uuid';
+import { generateUid } from './util';
 import { matchType, modifierToKeycode } from "./constant";
 
 const handleArgs = (action: ArgsAction) => {
@@ -166,13 +166,13 @@ const objectMaker: any = {
   'args': handleArgs,
   'clipboard': handleClipboard,
   'cond': handleConditional,
+  'hotkey': handleHotkey,
   'keyDispatching': handleKeyDispatching,
   'keyword': handleKeyword,
   'notification': handleNotification,
   'open': handleOpen,
   'script': handleScript,
   'scriptFilter': handleScriptFilter,
-  'hotkey': handleHotkey,
 };
 
 let connections = {} as any;
@@ -203,7 +203,7 @@ export const convert = (command: any, parentObject?: any) => {
       if (!action.type) {
         // continue
       } else {
-        objects.push(convert(action, obj));
+        (convert(action, obj) as any[]).forEach((obj) => objects.push(obj));
       }
     });
   }
