@@ -19,7 +19,8 @@ const transformAttributes = (sourceJson: any) => {
   deleteAttributeIfExist(sourceJson, 'defaultIcon');
   deleteAttributeIfExist(sourceJson, 'latest');
 
-  insertAttribute(sourceJson, 'bundleId', `${sourceJson.creator}.${sourceJson.name}`);
+  insertAttribute(sourceJson, 'bundleid', `${sourceJson.creator}.${sourceJson.name}`);
+  insertAttribute(sourceJson, 'readme', `${sourceJson.readme ?? '(no readme)'}\n\nThis workflow is converted by arvis-to-alfred.`);
   replaceAttribute(sourceJson, 'creator', 'createdby');
   replaceAttribute(sourceJson, 'webAddress', 'webaddress');
 
@@ -57,7 +58,7 @@ const convert = async (source?: string, outputPath?: string) => {
 
     const out = outputPath ? outputPath : `info.plist`;
 
-    const resultPlist = plist.build(transformAttributes(sourceJson), { indent: '\t', allowEmpty: true });
+    const resultPlist = plist.build(transformAttributes(sourceJson), { indent: '\t', allowEmpty: false });
     await fse.writeFile(out, resultPlist, { encoding: 'utf-8' });
 
     console.log(chalk.white(`${chalk.greenBright('✔')} info.plist converting is done.`));

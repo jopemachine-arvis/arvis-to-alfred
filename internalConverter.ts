@@ -1,13 +1,15 @@
 import { generateUid } from './util';
 import { matchType, modifierToKeycode } from "./constant";
 
+const conditionMap = new Map<string, string>();
+
 const handleArgs = (action: ArgsAction) => {
   const object = {} as any;
   object.config = {
     argument: action.arg,
     passthroughargument: false,
     variables: {},
-  }
+  };
 
   object.version = 1;
   return object;
@@ -20,7 +22,7 @@ const handleOpen = (action: OpenAction) => {
     key: 'spaces',
     url: action.target,
     utf8: true
-  }
+  };
 
   object.version = 1;
   return object;
@@ -34,7 +36,7 @@ const handleKeyword = (action: KeywordAction) => {
     subtext: action.subtitle,
     text: action.title,
     withspace: true
-  }
+  };
 
   object.version = 1;
   return object;
@@ -49,7 +51,7 @@ const handleScript = (action: ScriptAction) => {
     scriptargtype: 0,
     scriptfile: '',
     type: 0
-  }
+  };
 
   object.version = 2;
   return object;
@@ -77,7 +79,7 @@ const handleScriptFilter = (action: Command) => {
     title: action.title,
     type: 0,
     withspace: action.withspace
-  }
+  };
 
   object.version = 3;
   return object;
@@ -90,7 +92,7 @@ const handleClipboard = (action: ClipboardAction) => {
     clipboardtext: action.text,
     ignoredynamicplaceholders: false,
     transient: false,
-  }
+  };
 
   object.version = 3;
   return object;
@@ -98,6 +100,12 @@ const handleClipboard = (action: ClipboardAction) => {
 
 const handleConditional = (action: CondAction) => {
   const object = {} as any;
+
+  if (!conditionMap.has(action.if.cond)) {
+    const conditionUid = generateUid();
+    conditionMap.set(action.if.cond, conditionUid);
+  }
+
   object.config = {
     conditions: {
       inputstring: '',
@@ -105,10 +113,10 @@ const handleConditional = (action: CondAction) => {
       matchmode: 0,
       matchstring: action.if.cond,
       outputlabel: '',
-      uid: generateUid(),
+      uid: conditionMap.get(action.if.cond),
     },
     elselabel: 'else'
-  }
+  };
 
   object.version = 1;
   return object;
@@ -122,7 +130,7 @@ const handleNotification = (action: NotiAction) => {
     removeextension: false,
     text: action.text,
     title: action.title
-  }
+  };
 
   object.version = 1;
   return object;
@@ -136,7 +144,7 @@ const handleKeyDispatching = (action: KeyDispatchingAction) => {
     keycode: -1,
     keymod: action.modifiers ? (modifierToKeycode as any)[action.modifiers] : 0,
     overridewithargument: false,
-  }
+  };
 
   object.version = 1;
   return object;
@@ -156,7 +164,7 @@ const handleHotkey = (action: HotkeyAction) => {
     leftcursor: false,
     modsmode: 0,
     relatedAppsMode: 0,
-  }
+  };
 
   object.version = 2;
   return object;
@@ -178,33 +186,57 @@ const objectMaker: any = {
 let connections = {} as any;
 
 export const convert = (command: any, parentObject?: any) => {
-  if (!objectMaker[command.type]) return [];
+  const objects = [];
 
-  const obj = {
-    uid: generateUid(),
-    type: matchType[command.type],
-    ...objectMaker[command.type](command),
-  };
-  const objects = [obj];
+  let obj: any;
 
-  if (!connections[obj.uid]) connections[obj.uid] = [];
+  if (command.type && objectMaker[command.type]) {
+    obj = {
+      uid: generateUid(),
+      type: matchType[command.type],
+      ...objectMaker[command.type](command),
+    };
+    objects.push(obj);
+  } else {
+    obj = parentObject;
+  }
 
   if (parentObject) {
-    connections[parentObject.uid].push({
-      destinationuid: obj.uid,
-      modifiers: (modifierToKeycode as any)[command.modifiers],
-      modifiersubtext: '',
-      vitoclose: false,
-    });
+    if (!connections[parentObject.uid]) connections[parentObject.uid] = [];
+    if (parentObject.uid !== obj.uid) {
+      const node: any = {
+        destinationuid: obj.uid,
+        modifiers: (modifierToKeycode as any)[command.modifiers],
+        modifiersubtext: '',
+        vitoclose: false,
+      };
+
+      if (obj.config.conditions?.matchstring) {
+        node.sourceoutputuid = conditionMap.get(obj.config.conditions!.matchstring);
+      }
+
+      connections[parentObject.uid].push(node);
+    }
   }
 
   if (command.actions) {
-    command.actions.forEach((action: any) => {
-      if (!action.type) {
-        // continue
-      } else {
+    if (command.actions.length) {
+      command.actions.forEach((action: any) => {
         (convert(action, obj) as any[]).forEach((obj) => objects.push(obj));
-      }
+      });
+    } else {
+
+      // Handle then, else case
+      [...command.actions.then, ...command.actions.else].forEach((thenElseAction: any) => {
+        (convert(thenElseAction, obj) as any[]).forEach((thenElseObj) => objects.push(thenElseObj));
+      });
+    }
+  }
+
+  if (command.if) {
+    // obj => conditional node
+    (convert(command.if, obj) as any[]).forEach((obj) => {
+      objects.push(obj);
     });
   }
 
@@ -212,6 +244,7 @@ export const convert = (command: any, parentObject?: any) => {
 
   const connectionResult = { ...connections };
   connections = {};
+  conditionMap.clear();
 
   return {
     objects,
