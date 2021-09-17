@@ -3,6 +3,12 @@ import { matchType, modifierToKeycode } from "./constant";
 
 const conditionMap = new Map<string, string>();
 
+const argTypeToNumber: Record<'no' | 'optional' | 'required', number> = {
+  'no': 2,
+  'optional': 1,
+  'required': 0,
+};
+
 const setValue = <T>(value: T, defaultValue?: T) => {
   return value ?? defaultValue ?? '';
 };
@@ -35,7 +41,7 @@ const handleOpen = (action: OpenAction) => {
 const handleKeyword = (action: KeywordAction) => {
   const object = {} as any;
   object.config = {
-    argumenttype: 2,
+    argumenttype: action.argType ? argTypeToNumber[action.argType] : 0,
     withspace: true,
     keyword: setValue(action.command),
     subtext: setValue(action.subtitle),
@@ -68,7 +74,7 @@ const handleScriptFilter = (action: Command) => {
     alfredfiltersresultsmatchmode: 0,
     argumenttreatemptyqueryasnil: true,
     argumenttrimmode: 0,
-    argumenttype: 2,
+    argumenttype: action.argType ? argTypeToNumber[action.argType] : 0,
     escaping: 102,
     queuedelaycustom: 3,
     queuedelayimmediatelyinitially: true,
