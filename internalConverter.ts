@@ -206,7 +206,7 @@ export const convert = (command: any, parentObject?: any) => {
     if (parentObject.uid !== obj.uid) {
       const node: any = {
         destinationuid: obj.uid,
-        modifiers: (modifierToKeycode as any)[command.modifiers],
+        modifiers: (modifierToKeycode as any)[command.modifiers] ?? 0,
         modifiersubtext: '',
         vitoclose: false,
       };

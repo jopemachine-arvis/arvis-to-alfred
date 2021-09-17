@@ -1,6 +1,6 @@
 {
   "name": "arvis-to-alfred",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Help to convert arvis-workflow.json to the info.plist file format of Alfred-workflow's",
   "main": "dist/index.js",
   "scripts": {
