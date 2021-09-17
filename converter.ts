@@ -58,7 +58,7 @@ const convert = async (source?: string, outputPath?: string) => {
 
     const out = outputPath ? outputPath : `info.plist`;
 
-    const resultPlist = plist.build(transformAttributes(sourceJson), { indent: '\t', allowEmpty: false });
+    const resultPlist = plist.build(transformAttributes(sourceJson), { indent: '\t', allowEmpty: true });
     await fse.writeFile(out, resultPlist, { encoding: 'utf-8' });
 
     console.log(chalk.white(`${chalk.greenBright('✔')} info.plist converting is done.`));
