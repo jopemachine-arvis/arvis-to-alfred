@@ -3,12 +3,16 @@ import { matchType, modifierToKeycode } from "./constant";
 
 const conditionMap = new Map<string, string>();
 
+const setValue = <T>(value: T, defaultValue?: T) => {
+  return value ?? defaultValue ?? '';
+};
+
 const handleArgs = (action: ArgsAction) => {
   const object = {} as any;
   object.config = {
-    argument: action.arg,
     passthroughargument: false,
     variables: {},
+    argument: setValue(action.arg),
   };
 
   object.version = 1;
@@ -20,8 +24,8 @@ const handleOpen = (action: OpenAction) => {
   object.config = {
     browser: '',
     key: 'spaces',
-    url: action.target,
-    utf8: true
+    utf8: true,
+    url: setValue(action.target),
   };
 
   object.version = 1;
@@ -32,10 +36,10 @@ const handleKeyword = (action: KeywordAction) => {
   const object = {} as any;
   object.config = {
     argumenttype: 2,
-    keyword: action.command,
-    subtext: action.subtitle,
-    text: action.title,
-    withspace: true
+    withspace: true,
+    keyword: setValue(action.command),
+    subtext: setValue(action.subtitle),
+    text: setValue(action.title),
   };
 
   object.version = 1;
@@ -47,10 +51,10 @@ const handleScript = (action: ScriptAction) => {
   object.config = {
     concurrently: false,
     escaping: 68,
-    script: action.script,
     scriptargtype: 0,
     scriptfile: '',
-    type: 0
+    type: 0,
+    script: setValue(action.script),
   };
 
   object.version = 2;
@@ -66,19 +70,19 @@ const handleScriptFilter = (action: Command) => {
     argumenttrimmode: 0,
     argumenttype: 2,
     escaping: 102,
-    keyword: action.command,
     queuedelaycustom: 3,
     queuedelayimmediatelyinitially: true,
     queuedelaymode: 0,
     queuemode: 1,
-    runningsubtext: action.runningSubtext,
-    script: action.scriptFilter,
     scriptargtype: 0,
     scriptfile: '',
-    subtext: action.subtitle,
-    title: action.title,
     type: 0,
-    withspace: action.withspace
+    keyword: setValue(action.command),
+    runningsubtext: setValue(action.runningSubtext),
+    script: setValue(action.scriptFilter),
+    subtext: setValue(action.subtitle),
+    title: setValue(action.title),
+    withspace: setValue(action.withspace, true)
   };
 
   object.version = 3;
@@ -89,9 +93,9 @@ const handleClipboard = (action: ClipboardAction) => {
   const object = {} as any;
   object.config = {
     autopaste: false,
-    clipboardtext: action.text,
     ignoredynamicplaceholders: false,
     transient: false,
+    clipboardtext: setValue(action.text),
   };
 
   object.version = 3;
@@ -111,9 +115,9 @@ const handleConditional = (action: CondAction) => {
       inputstring: '',
       matchcasesensitive: false,
       matchmode: 0,
-      matchstring: action.if.cond,
       outputlabel: '',
       uid: conditionMap.get(action.if.cond),
+      matchstring: setValue(action.if.cond),
     },
     elselabel: 'else'
   };
@@ -128,8 +132,8 @@ const handleNotification = (action: NotiAction) => {
     lastpathcomponent: false,
     onlyshowifquerypopulated: false,
     removeextension: false,
-    text: action.text,
-    title: action.title
+    text: setValue(action.text),
+    title: setValue(action.title)
   };
 
   object.version = 1;
@@ -140,10 +144,10 @@ const handleKeyDispatching = (action: KeyDispatchingAction) => {
   const object = {} as any;
   object.config = {
     count: 1,
-    keychar: action.target,
     keycode: -1,
     keymod: action.modifiers ? (modifierToKeycode as any)[action.modifiers] : 0,
     overridewithargument: false,
+    keychar: setValue(action.target),
   };
 
   object.version = 1;
